@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="com.reserve.mapper.ReserveMapper">
+	
+	<!-- 예약 숙소 정보 -->
+	<select id = "getLodgingInfo" resultType ="com.reserve.model.ReservePageLodgingDTO">
+	
+		select lodgingId, lodgingName, lodgingPrice from reserve_lodging where lodgingId = #{lodgingId}	
+	
+	</select>
+	
+	
+	<select id = "getReserveInfo" resultType ="com.reserve.model.ReserveLodgingDTO">
+	
+		select lodgingId, lodgingPrice from reserve_lodging where lodgingId = #{lodgingId}	
+	
+	</select>
+	
+	<!-- 예약 테이블 등록 -->
+	<insert id = "enrollReserve">
+	
+		insert into reserve_reserve(reserveId, reserveName, memberId, reserveState) values (#{reserveId}, #{reserveName}, #{memberId}, '예약대기')
+	
+	</insert>
+	
+	<!-- 예약 숙소 테이블 등록 -->
+	<insert id = "enrollReserveLodging">
+	
+		insert into reserve_reservelodging(reserveId, lodgingId, lodgingCount, lodgingPrice) 
+		values(#{reserveId}, #{lodgingId}, #{lodgingCount}, #{lodgingPrice})
+	
+	</insert>
+
+	
+	<!-- 예약 재고 차감 -->
+	<update id = "deductStock">
+	
+		update reserve_lodging set lodgingStock = #{lodgingStock} where lodgingId = #{lodgingId}
+	
+	</update>
+
+	<!-- 예약 취소 -->
+	<update id = "reserveCancel">
+		
+		update reserve_reserve set reserveState = '예약취소' where reserveId = #{reserveId}
+		 
+	</update>
+	
+	<!-- 예약 숙소 정보(예약 취소) -->
+	<select id = "getReserveLodgingInfo" resultType ="com.reserve.model.ReserveLodgingDTO">
+	
+		select * from reserve_reserveLodging where reserveId = #{reserveId}
+	
+	</select>
+	
+	<!-- 예약 정보(예약 취소) -->
+	<select id = "getReserve" resultType = "com.reserve.model.ReserveDTO">
+	
+		select * from reserve_reserve where reserveId = #{reserveId}
+	
+	</select>
+	
+	
+  </mapper>

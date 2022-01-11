@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="com.reserve.mapper.LeaseMapper">
+  	<!-- 임대인 등록 -->
+      <insert id="leaseEnroll">
+      
+          insert into reserve_lease(leaseName, typeId, leaseIntro) values(#{leaseName}, #{typeId}, #{leaseIntro} )
+ 
+      </insert>
+      
+     <!-- 임대인 목록 -->
+     <select id="leaseGetList" resultType="com.reserve.model.LeaseVO">
+    
+        select  leaseId, leaseName, typeId, regDate, updateDate
+        from reserve_lease
+        <if test="keyword != null">
+            where leaseName like concat('%',#{keyword}, '%')
+        </if>
+        order by leaseId desc 
+        limit #{skip}, #{amount}    
+    </select>
+    
+    <!-- 임대인 개수 -->
+      <select id="leaseGetTotal" resultType="int">
+      
+          select count(*) from reserve_lease
+          
+          <if test="keyword != null">
+          
+              where leaseName like concat('%', #{keyword}, '%');
+          
+          </if>
+          
+      </select>
+      
+      <!-- 임대인 페이지 -->
+  	<select id="leaseGetDetail" resultType="com.reserve.model.LeaseVO">
+  	
+  		select * from reserve_lease where leaseid = #{leaseId}
+  	
+  	</select>
+  	
+  	<!-- 임대인 내용 수정 -->
+	<update id="leaseModify">
+	
+		update reserve_lease set leaseName=#{leaseName}, typeId=#{typeId}, leaseIntro=#{leaseIntro}, updatedate=now() where leaseId = #{leaseId}
+	
+	</update>
+      
+    <!-- 임대인 정보 삭제 -->
+    <delete id = "leaseDelete">
+    
+    	delete from reserve_lease where leaseId = #{leaseId}
+    
+    </delete> 
+     
+      
+  </mapper>

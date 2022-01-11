@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="com.reserve.mapper.CartMapper">
+
+	<!-- 카트 추가 -->
+	<insert id="addCart">
+	
+		insert into reserve_cart(memberId, lodgingId, lodgingCount)
+		values(#{memberId}, #{lodgingId}, #{lodgingCount}) 
+	
+	</insert>
+	
+	
+	<!-- 카트 삭제 -->
+	<delete id="deleteCart">
+	
+		delete from reserve_cart where cartId = #{cartId}
+	
+	</delete>
+	
+	<!-- 카트 수량 수정 -->
+	<update id="modifyCount">
+	
+		update reserve_cart set lodgingCount=#{lodgingCount} where cartId = #{cartId}
+	
+	</update>
+	
+	
+	<!-- 카트 목록 -->
+	<select id="getCart" resultType="com.reserve.model.CartDTO">
+	
+		select a.cartId, a.memberId, a.lodgingId, a.lodgingCount, b.lodgingName, b.lodgingPrice
+		from reserve_cart a left outer join reserve_lodging b on a.lodgingId = b.lodgingId
+		where memberId = #{memberId}	
+	
+	</select>
+	
+	<!-- 카트 확인 -->
+	<select id="checkCart" resultType="com.reserve.model.CartDTO">
+	
+		select * from reserve_cart 
+		where memberId = #{memberId} and lodgingId = #{lodgingId}
+	
+	</select>
+	
+	
+	<!-- 카트 제거(예약) -->
+	<delete id = "deleteReserveCart">
+	
+		delete from reserve_cart where memberId = #{memberId} and lodgingId = #{lodgingId}
+	
+	</delete>
+	
+	
+  </mapper>

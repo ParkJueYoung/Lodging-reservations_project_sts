@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="com.reserve.mapper.AdminMapper">
+
+	<!-- 숙소 등록 -->
+	<insert id = "lodgingEnroll">
+	
+		<selectKey resultType = "int" keyProperty = "lodgingId" order = "AFTER">
+		
+			select LAST_INSERT_ID()
+		
+		</selectKey>
+	
+		insert into reserve_lodging(lodgingName, leaseId, cateCode, lodgingPrice, lodgingStock, lodgingIntro, lodgingContents)
+		values(#{lodgingName}, #{leaseId}, #{cateCode}, #{lodgingPrice}, #{lodgingStock}, #{lodgingIntro}, #{lodgingContents})
+	
+	</insert>
+
+	<select id = "cateList" resultType = "com.reserve.model.CateVO">
+	
+		select * from reserve_bcate order by cateCode
+	
+	</select>
+
+	
+	<select id = "lodgingGetList" resultType = "com.reserve.model.LodgingVO">
+	
+	
+		select  lodgingId, lodgingName,  b.leaseId, c.cateCode, lodgingStock, a.regDate
+		from reserve_lodging a 
+		left outer join reserve_lease b on a.leaseId = b.leaseId
+		left outer join reserve_bcate c on a.cateCode = c.cateCode
+		<if test="keyword != null">
+			where (lodgingName like concat ('%', #{keyword}, '%'))
+		</if>
+		order by lodgingId desc 
+		limit #{skip}, #{amount}
+	
+	</select>
+	
+	<!-- 숙소 총 갯수 -->
+  	<select id="lodgingGetTotal" resultType="int">
+  	
+  		select count(*) from reserve_lodging
+  		
+  		<if test="keyword != null">
+  		
+  			where lodgingName like concat('%' , #{keyword}, '%')
+  		
+  		</if>
+  	
+  	</select>
+
+
+	<!-- 숙소 조회 페이지 -->
+	<select id="lodgingGetDetail" resultType="com.reserve.model.LodgingVO">
+	
+		select lodgingId, lodgingName, (select leaseId from reserve_lease where leaseId =reserve_lodging.leaseId) leaseName, 
+			leaseId, cateCode, lodgingPrice, lodgingStock, lodgingIntro, lodgingContents, regDate, updateDate 
+		from reserve_lodging where lodgingId = #{lodgingId}
+	
+	</select>
+
+	<!-- 숙소 정보 수정 -->
+	<update id = "lodgingModify">
+	
+		update reserve_lodging set lodgingName = #{lodgingName}, leaseId = #{leaseId}, cateCode = ${cateCode}, 
+		lodgingPrice = #{lodgingPrice}, lodgingStock = #{lodgingStock}, lodgingIntro = #{lodgingIntro}, lodgingContents = #{lodgingContents}, updateDate = now()
+		where lodgingId = ${lodgingId}
+	
+	</update>
+	
+	<!-- 숙소 정보 삭제 -->
+	<delete id = "lodgingDelete">
+	
+		delete from reserve_lodging where lodgingId = #{lodgingId}
+	
+	</delete>
+
+	<!-- 이미지 등록 -->
+	<insert id =  "imageEnroll">
+	
+		insert into reserve_image(lodgingId, fileName, uploadPath, uuid) values (#{lodgingId}, #{fileName}, #{uploadPath}, #{uuid})
+	
+	</insert>
+	
+	<!-- 지정 숙소 이미지 전체 삭제 -->
+	<delete id = "deleteImageAll">
+	
+		delete FROM reserve_image where lodgingId = #{lodgingId}
+	
+	</delete>
+	
+	
+	<!-- 어제 날짜 이미지 리스트 -->
+	<select id="checkFileList" resultType="com.reserve.model.AttachImageVO">
+	
+		select * from reserve_image where uploadPath = DATE_FORMAT(DATE_ADD(NOW(), INTERVAL -1 DAY), '%Y\%m\%d')	
+	
+	</select>
+	
+	<!-- 지정 숙소 이미지 정보 얻기 -->
+	<select id = "getAttachInfo" resultType = "com.reserve.model.AttachImageVO">
+	
+		select * from reserve_image where lodgingId = #{lodgingId}
+	
+	</select>
+	
+	<!-- 예약 리스트 -->
+	<select id = "getReserveList" resultType = "com.reserve.model.ReserveDTO">
+	
+		select reserveId, memberId, reserveState, reserveDate
+		from reserve_reserve
+		<if test ="keyword != null">
+			where memberId like concat('%', #{keyword}, '%')
+		</if>
+		order by reserveDate desc
+		limit #{skip}, #{amount}
+	
+	</select>
+	
+	
+	<!-- 숙소 총 개수 -->
+	<select id = "getReserveTotal" resultType="int">
+	
+		select count(*) from reserve_reserve
+	
+		<if test = "keyword != null">
+			where memberId like concat('%', #{keyword}, '%')	
+		</if>
+	
+	</select>
+	
+	
+  </mapper>

@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.reserve.mapper.LodgingMapper">
+
+	<!-- criteria(검색조건) -->
+	<sql id="criteria">
+
+		<trim prefix="where (" suffix=")" prefixOverrides="AND">
+			<foreach item="type" collection="typeArr">
+				<trim prefix="AND">
+					<choose>
+						<when test="type == 'A'.toString()">
+							<trim prefixOverrides="or">
+								<foreach collection="leaseArr" item="leaseId">
+									<trim prefix="or">
+										a.leaseId = #{leaseId}
+									</trim>
+								</foreach>
+							</trim>
+						</when>
+						<when test="type == 'C'.toString()">
+							a.cateCode like concat ('%', #{cateCode}, '%')
+						</when>
+						<when test="type == 'T'.toString()">
+							lodgingName like concat ('%', #{keyword}, '%')
+						</when>
+					</choose>
+				</trim>
+			</foreach>
+		</trim>
+
+	</sql>
+
+	<!-- 숙소 검색 -->
+	<select id="getLodgingList"
+		resultType="com.reserve.model.LodgingVO">
+
+		select lodgingId, lodgingName, b.leaseName, a.leaseId, c.cateName, a.cateCode, lodgingPrice
+		from reserve_lodging a left outer join reserve_lease b on a.leaseId = b.leaseId 
+		left outer join reserve_bcate c	on a.cateCode = c.cateCode
+		<include refid="criteria"></include>
+		order by lodgingId desc
+		limit #{skip}, #{amount}
+
+	</select>
+
+	<!-- 숙소 총 개수 -->
+	<select id="lodgingGetTotal" resultType="int">
+
+		select count(*) from reserve_lodging a
+
+		<include refid="criteria"></include>
+
+	</select>
+
+	<!-- 숙소 id 리스트 요청 -->
+	<select id="getLeaseIdList" resultType="String">
+
+		select leaseId from
+		reserve_lease where leaseName like concat ('%',
+		#{keyword}, '%')
+
+	</select>
+	
+	<!-- 카라반 카테고리 리스트 -->
+	<select id="getCateCode1" resultType="com.reserve.model.CateVO">
+	
+		<![CDATA[
+			select * from reserve_bcate where cateCode > 100 and cateCode < 200
+		]]>
+	</select>
+	
+	<!-- 캠핑장 카테고리 리스트 -->
+	<select id="getCateCode2" resultType="com.reserve.model.CateVO">
+	
+		<![CDATA[
+			select * from reserve_bcate where cateCode > 200 and cateCode < 300
+		]]>
+	
+	</select>
+	
+	<!-- 검색 대상 카테고리 리스트 -->	
+	<select id="getCateList" resultType="String">
+	
+		select distinct cateCode from reserve_lodging where 
+		<foreach item="type" collection="typeArr">		
+  				<choose>
+  					<when test="type == 'A'.toString()">
+  						<trim prefixOverrides="or">
+		  					<foreach collection="leaseArr" item="leaseId">
+		  						<trim prefix="or">
+		  							leaseId = #{leaseId}
+		  						</trim>
+		  					</foreach>  						
+  						</trim>
+  					</when>
+  					<when test="type == 'T'.toString()">
+  						lodgingName like concat ('%', #{keyword}, '%')
+  					</when>  					
+  				</choose>
+  		</foreach>
+	
+	</select>
+	
+	<!-- 카테고리 정보(+검색대상 갯수) -->		
+	<select id="getCateInfo" resultType="com.reserve.model.CateFilterDTO">
+	
+		select DISTINCT count(*) cateCount, a.cateCode,b.cateName from reserve_lodging a left join reserve_bcate b on a.cateCode = b.cateCode 
+		
+		where 
+
+		<foreach item="type" collection="typeArr">		
+  				<choose>
+  					<when test="type == 'A'.toString()">
+  					
+  						<trim prefix="(" suffix=")" prefixOverrides="or">
+  						
+		  					<foreach collection="leaseArr" item="leaseId">
+		  					
+		  						<trim prefix="or">
+		  						
+		  							leaseId = #{leaseId}
+		  							
+		  						</trim>
+		  						
+		  					</foreach>
+		  					  						
+  						</trim>
+  						
+  						and a.cateCode = #{cateCode}
+  						
+  					</when>
+  					
+  					<when test="type == 'T'.toString()">
+  					
+  						lodgingName like concat ('%', #{keyword}, '%') and a.cateCode = #{cateCode}
+  						 
+  					</when>
+  					  					
+  				</choose>
+  		</foreach>
+	
+	</select>
+	
+	<!-- 숙소 정보 -->
+	<select id="getLodgingInfo" resultType="com.reserve.model.LodgingVO">
+	
+			select a.LodgingId, a.LodgingName, a.LeaseId, b.LeaseName, a.CATECODE, c.CATENAME, a.LodgingPrice, a.LodgingStock, a.LodgingIntro, a.LodgingContents
+			from reserve_lodging a left outer join reserve_lease b on a.leaseId = b.leaseId
+			left outer join reserve_bcate c on a.catecode = c.catecode
+			where lodgingId = ${lodgingId}	
+	
+	</select>
+	
+</mapper>
